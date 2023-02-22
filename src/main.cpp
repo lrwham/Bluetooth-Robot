@@ -28,7 +28,7 @@
 #include <Adafruit_MotorShield.h>
 // #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
-#include "consts.h"
+#include "../lib/consts.h"
 
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
