@@ -26,7 +26,7 @@
 #include <HardwareSerial.h>
 #include <Arduino.h>
 #include <Adafruit_MotorShield.h>
-//#include <Adafruit_I2CDevice.h>
+// #include <Adafruit_I2CDevice.h>
 #include <SPI.h>
 #include "consts.h"
 
@@ -39,12 +39,11 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *leftWheel = AFMS.getMotor(1);
 Adafruit_DCMotor *rightWheel = AFMS.getMotor(2);
 
-
-speed   speedSetting = stopped;
+speed speedSetting = stopped;
 uint8_t rightWheelSpeed = 0;
 uint8_t leftWheelSpeed = 0;
-bool    rightWheelForward = FORWARD;
-bool    leftWheelForward  = FORWARD;
+uint8_t rightWheelForward = FORWARD;
+uint8_t leftWheelForward = FORWARD;
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic;
@@ -72,9 +71,6 @@ class MyServerCallbacks : public BLEServerCallbacks
     deviceConnected = false;
   }
 };
-
-
-
 
 keypad_string_code hashit(std::string const &inString)
 {
@@ -121,13 +117,12 @@ keypad_string_code hashit(std::string const &inString)
   return error;
 }
 
-
 void stopAllMotors()
 {
-  rightWheel->setSpeed(0);
-  leftWheel->setSpeed(0);
-  rightWheel->run(RELEASE);
-  leftWheel->run(RELEASE);
+  rightWheelSpeed = STOPPED;
+  leftWheelSpeed = STOPPED;
+  rightWheelForward = RELEASE;
+  leftWheelForward = RELEASE;
 }
 
 void serialPrintRxValue(std::string const &rxValue)
@@ -146,7 +141,22 @@ void serialPrintRxValue(std::string const &rxValue)
     Serial.println("*********");
   }
 }
-
+uint8_t speedValue(speed speedEnum)
+{
+  switch (speedEnum)
+  {
+  case max_speed:
+    return MAX_SPEED;
+  case fast_speed:
+    return FAST_SPEED;
+  case slow_speed:
+    return SLOW_SPEED;
+  case min_speed:
+    return MIN_SPEED;
+  default:
+    return STOPPED;
+  }
+}
 class MyCallbacks : public BLECharacteristicCallbacks
 {
   void onWrite(BLECharacteristic *pCharacteristic)
@@ -157,10 +167,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
     {
     case up_pressed:
       Serial.println("Up Pressed");
-      rightWheel->setSpeed(255);
-      leftWheel->setSpeed(255);
-      rightWheel->run(FORWARD);
-      leftWheel->run(FORWARD);
+      rightWheelSpeed = speedValue(speedSetting);
+      leftWheelSpeed = speedValue(speedSetting);
+      rightWheelForward = FORWARD;
+      leftWheelForward = FORWARD;
       break;
     case up_released:
       Serial.println("Up Released");
@@ -168,10 +178,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
       break;
     case right_pressed:
       Serial.println("Right Pressed");
-      rightWheel->setSpeed(127);
-      leftWheel->setSpeed(127);
-      rightWheel->run(BACKWARD);
-      leftWheel->run(FORWARD);
+      rightWheelSpeed = speedValue(speedSetting)/2;
+      leftWheelSpeed = speedValue(speedSetting)/2;
+      rightWheelForward = BACKWARD;
+      leftWheelForward = FORWARD;
       break;
     case right_released:
       Serial.println("Right Released");
@@ -179,10 +189,10 @@ class MyCallbacks : public BLECharacteristicCallbacks
       break;
     case down_pressed:
       Serial.println("Down Pressed");
-      rightWheel->setSpeed(255);
-      leftWheel->setSpeed(255);
-      rightWheel->run(BACKWARD);
-      leftWheel->run(BACKWARD);
+      rightWheelSpeed = speedValue(speedSetting);
+      leftWheelSpeed = speedValue(speedSetting);
+      rightWheelForward = BACKWARD;
+      leftWheelForward = BACKWARD;
       break;
     case down_released:
       Serial.println("Down Released");
@@ -190,14 +200,26 @@ class MyCallbacks : public BLECharacteristicCallbacks
       break;
     case left_pressed:
       Serial.println("Left Pressed");
-      rightWheel->setSpeed(127);
-      leftWheel->setSpeed(127);
-      rightWheel->run(FORWARD);
-      leftWheel->run(BACKWARD);
+      rightWheelSpeed = speedValue(speedSetting)/2;
+      leftWheelSpeed = speedValue(speedSetting)/2;
+      rightWheelForward = FORWARD;
+      leftWheelForward = BACKWARD;
       break;
     case left_released:
       Serial.println("Left Released");
       stopAllMotors();
+      break;
+    case one_pressed:
+      speedSetting = min_speed;
+      break;
+    case two_pressed:
+      speedSetting = slow_speed;
+      break;
+    case three_pressed:
+      speedSetting = fast_speed;
+      break;
+    case four_pressed:
+      speedSetting = max_speed;
       break;
     default:
       serialPrintRxValue(rxValue);
@@ -247,33 +269,40 @@ void setup()
   // Start advertising
   pServer->getAdvertising()->start();
   Serial.println("Waiting for a client connection to notify...");
-  
 }
+
+
 
 void loop()
 {
-/*
-  if (deviceConnected)
-  {
-    pTxCharacteristic->setValue(&txValue, 1);
-    pTxCharacteristic->notify();
-    txValue++;
-    delay(20); // bluetooth stack will go into congestion, if too many packets are sent
-  }
+  
 
-  // disconnecting
-  if (!deviceConnected && oldDeviceConnected)
-  {
-    delay(500);                  // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising(); // restart advertising
-    Serial.println("start advertising");
-    oldDeviceConnected = deviceConnected;
-  }
-  // connecting
-  if (deviceConnected && !oldDeviceConnected)
-  {
-    // do stuff here on connecting
-    oldDeviceConnected = deviceConnected;
-  }
-  */
+  rightWheel->setSpeed(rightWheelSpeed);
+  leftWheel->setSpeed(leftWheelSpeed);
+  rightWheel->run(rightWheelForward);
+  leftWheel->run(leftWheelForward);
+  /*
+    if (deviceConnected)
+    {
+      pTxCharacteristic->setValue(&txValue, 1);
+      pTxCharacteristic->notify();
+      txValue++;
+      delay(20); // bluetooth stack will go into congestion, if too many packets are sent
+    }
+
+    // disconnecting
+    if (!deviceConnected && oldDeviceConnected)
+    {
+      delay(500);                  // give the bluetooth stack the chance to get things ready
+      pServer->startAdvertising(); // restart advertising
+      Serial.println("start advertising");
+      oldDeviceConnected = deviceConnected;
+    }
+    // connecting
+    if (deviceConnected && !oldDeviceConnected)
+    {
+      // do stuff here on connecting
+      oldDeviceConnected = deviceConnected;
+    }
+    */
 }

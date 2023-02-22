@@ -34,9 +34,9 @@ const std::string FOUR_KEY_RELEASED = "!B408";
 // Arbitrary values for motor speed
 // between 0-255 according to the Adafruit Motor Shield library
 const uint8_t MAX_SPEED = 255;
-const uint8_t FAST_SPEED = 175;
-const uint8_t SLOW_SPEED = 100;
-const uint8_t MIN_SPEED = 25;
+const uint8_t FAST_SPEED = 190;
+const uint8_t SLOW_SPEED = 125;
+const uint8_t MIN_SPEED = 80;
 const uint8_t STOPPED = 0;
 
 
