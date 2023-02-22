@@ -56,9 +56,9 @@ uint16_t loopCounter = 0;
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
 
-#define SERVICE_UUID "944f3b20-b2d3-11ed-afa1-0242ac120002" // UART service UUID
-#define CHARACTERISTIC_UUID_RX "944f3eea-b2d3-11ed-afa1-0242ac120002"
-#define CHARACTERISTIC_UUID_TX "944f40b6-b2d3-11ed-afa1-0242ac120002"
+#define SERVICE_UUID "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
